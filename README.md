@@ -8,6 +8,7 @@ pip install easyocr
 
 In Python:
 
+```python
 import easyocr
 import numpy as np
 
@@ -18,7 +19,8 @@ if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
 
 #run code
 reader = easyocr.Reader(['ch_sim','en']) # this needs to run only once to load the model into memory
-#result = reader.readtext('chinese.jpg') # where 'chinese.jpg' can be replaced with any image file
+result = reader.readtext('chinese.jpg') # where 'chinese.jpg' can be replaced with any image file
 print(result)
+```
 
 
