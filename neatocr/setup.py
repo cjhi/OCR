@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'neatOCR'
+package_name = 'neatocr'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'read_sign = neatOCR.read_sign:main'
+            'read_sign = neatocr.read_sign:main'
         ],
     },
 )
