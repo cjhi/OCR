@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'read_sign = neatocr.read_sign:main'
+            'read_sign = neatocr.read_sign:main',
+            'follow_directions = neatocr.follow_directions:main',
         ],
     },
 )
