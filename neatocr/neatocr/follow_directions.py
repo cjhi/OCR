@@ -10,6 +10,8 @@ import time
 from numpy import inf
 import pandas as pd
 import numpy as np
+import string
+from std_msgs.msg import String
 
 
 class follow_directions(Node):
@@ -19,11 +21,15 @@ class follow_directions(Node):
         self.vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
         self.scan_sub = self.create_subscription(LaserScan, "scan", self.process_scan, qos_profile=qos_profile_sensor_data)
         #to do: fix this subscription
-        # self.read_sign_sub = self.create_subscription(string, self.process_image, 10)
+        self.read_sign_sub = self.create_subscription(String, "text", self.process_text, 10)
 
     def process_scan(self, scan):
         #To do: implement
         pass
+
+    def process_text(self, text):
+        print(text)
+
 
     def choosePath(self):
         #To do: implement
@@ -37,6 +43,7 @@ class follow_directions(Node):
         time.sleep(0.1) 
     
     def run_loop(self):
+        self.process_text(self)
         pass
 
 def main(args=None):

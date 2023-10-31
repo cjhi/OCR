@@ -7,6 +7,15 @@ from cv_bridge import CvBridge #Converts ros node images to openCV image objects
 import cv2
 import numpy as np
 from geometry_msgs.msg import Twist, Vector3
+from std_msgs.msg import String
+
+
+import easyocr
+import PIL.Image
+if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
+    PIL.Image.Resampling = PIL.Image
+
+reader = easyocr.Reader(['en']) # this needs to run only once to load the model into memory
 
 class read_sign(Node):
     """ The OCR Camera is a Python object that encompasses a ROS node 
@@ -21,7 +30,9 @@ class read_sign(Node):
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
 
         self.create_subscription(Image, image_topic, self.process_image, 10)
-        self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        #self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.command_pub = self.create_publisher(String, 'sign_text', 10)
+
         thread = Thread(target=self.loop_wrapper)
         thread.start()
 
@@ -29,6 +40,21 @@ class read_sign(Node):
         """ Process image messages from ROS and stash them in an attribute
             called cv_image for subsequent processing """
         self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+
+    def process_text(self):
+        print("processing text from image!")
+        result = reader.readtext(self.cv_image)
+        #print(result)
+        #print(type(result))
+        #print(result)
+        if (result != []):
+                #this is throwing an error???
+                print("found text, publishing")
+                print(result[0][1])
+                msg = String(result[0][1])
+                print(msg)
+                self.command_pub.publish(msg)
+        
 
     def loop_wrapper(self):
         """ This function takes care of calling the run_loop function repeatedly.
@@ -63,9 +89,11 @@ class read_sign(Node):
         # NOTE: only do cv2.imshow and cv2.waitKey in this function 
         if not self.cv_image is None:
             # self.binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
-            print(self.cv_image.shape)
+            #print(self.cv_image.shape)
             cv2.imshow('video_window', self.cv_image)
             # cv2.imshow('binary_window', self.binary_image)
+            self.process_text()
+
             if hasattr(self, 'image_info_window'):
                 cv2.imshow('image_info', self.image_info_window)
             cv2.waitKey(5) #Prints if a key is pressed at 200hz (5ms sleep)
@@ -77,6 +105,12 @@ if __name__ == '__main__':
 
 def main(args=None):
     print("GO!")
+    # result = reader.readtext('src/OCR/examples/english.png')
+    # print(result)
+    #print(type(result))
+    # if (result != None):
+    #     print(result[0][1])
+
     rclpy.init()
     n = read_sign("camera/image_raw")
     rclpy.spin(n)

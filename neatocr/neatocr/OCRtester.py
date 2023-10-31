@@ -4,7 +4,7 @@ if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
     PIL.Image.Resampling = PIL.Image
 
 reader = easyocr.Reader(['ch_sim','en']) # this needs to run only once to load the model into memory
-result = reader.readtext('EasyOCR/examples/english.png')
+result = reader.readtext('src/OCR/examples/blank.png')
 
 print(result)
 
