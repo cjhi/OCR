@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             'read_sign = neatocr.read_sign:main',
             'follow_directions = neatocr.follow_directions:main',
+            'move_robot = neatocr.move_robot:main'
         ],
     },
 )
