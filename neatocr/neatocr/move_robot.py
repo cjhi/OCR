@@ -15,6 +15,8 @@ import time
 from numpy import inf
 import pandas as pd
 import numpy as np
+from std_msgs.msg import String
+
 
 class move_robot(Node):
     def __init__(self):
@@ -23,12 +25,13 @@ class move_robot(Node):
         self.create_timer(0.1, self.run_loop)
         self.vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
         #self.scan_sub = self.create_subscription(LaserScan, "scan", self.process_scan, qos_profile=qos_profile_sensor_data)
+        self.read_sign_sub = self.create_subscription(String, "sign_text", self.process_text, 10)
 
 
     #def process_scan(self, scan):
 
-    def process_text():
-
+    def process_text(self, anything):
+        print(anything.data)
 
     def choosePath(self):
         msg = Twist()
