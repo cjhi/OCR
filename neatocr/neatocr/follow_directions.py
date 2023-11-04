@@ -1,4 +1,9 @@
-#Brooke and Swasti's person follower node
+import easyocr
+import PIL.Image
+if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
+    PIL.Image.Resampling = PIL.Image
+
+
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
@@ -10,7 +15,6 @@ import time
 from numpy import inf
 import pandas as pd
 import numpy as np
-import string
 from std_msgs.msg import String
 
 
@@ -19,31 +23,28 @@ class follow_directions(Node):
         super().__init__("follow_directions")
         self.create_timer(0.1, self.run_loop)
         self.vel_pub = self.create_publisher(Twist, "cmd_vel", 10)
-        self.scan_sub = self.create_subscription(LaserScan, "scan", self.process_scan, qos_profile=qos_profile_sensor_data)
-        #to do: fix this subscription
-        self.read_sign_sub = self.create_subscription(String, "text", self.process_text, 10)
+        #self.scan_sub = self.create_subscription(LaserScan, "scan", self.process_scan, qos_profile=qos_profile_sensor_data)
+        self.read_sign_sub = self.create_subscription(String, "sign_text", self.process_text, 10)
 
-    def process_scan(self, scan):
-        #To do: implement
-        pass
 
-    def process_text(self, text):
-        print(text)
+    #def process_scan(self, scan):
 
+    def process_text(self, anything):
+        print(anything.data)
 
     def choosePath(self):
-        #To do: implement
         msg = Twist()
+        z_value = 0.0
+        x_value = 0.3
 
-        z_value = 0
-        x_value = 0
         msg.angular.z = z_value
         msg.linear.x = x_value
         self.vel_pub.publish(msg)
-        time.sleep(0.1) 
+        #print("moving forward at 0.3m/s (hopefully)")
+        time.sleep(1) 
     
     def run_loop(self):
-        self.process_text(self)
+        #self.process_text(self)
         pass
 
 def main(args=None):
