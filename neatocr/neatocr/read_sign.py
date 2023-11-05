@@ -42,18 +42,20 @@ class read_sign(Node):
         self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
 
     def process_text(self):
-        print("processing text from image!")
-        result = reader.readtext(self.cv_image)
+        print("gettying text from image!")
+        # result = reader.readtext(self.cv_image) #actual camera output
+        result = [["Stop","Go"],[1,2,3],[4,5,6]] # This is for test
         #print(result)
         #print(type(result))
         #print(result)
         if (result != []):
-                #this is throwing an error???
-                print("found text, publishing")
-                print(result[0][1])
-                msg = String(result[0][1])
-                print(msg)
-                self.command_pub.publish(msg)
+            #this is throwing an error???
+            print("found text, publishing")
+            # msg = String(msg) # When testing just go [0][1] for go and [0][0] for stop
+            # msg = String("Hello World!")
+            msg = String(data=result[0][0]) # The piece d'resistance
+            print(msg)
+            self.command_pub.publish(msg)
         
 
     def loop_wrapper(self):
@@ -87,16 +89,18 @@ class read_sign(Node):
         
     def run_loop(self):
         # NOTE: only do cv2.imshow and cv2.waitKey in this function 
-        if not self.cv_image is None:
-            # self.binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
-            #print(self.cv_image.shape)
-            cv2.imshow('video_window', self.cv_image)
-            # cv2.imshow('binary_window', self.binary_image)
-            self.process_text()
+        # print
+        # if not self.cv_image is None:
+        #     # self.binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
+        #     #print(self.cv_image.shape)
+        #     cv2.imshow('video_window', self.cv_image)
+        #     # cv2.imshow('binary_window', self.binary_image)
+        #     self.process_text()
 
-            if hasattr(self, 'image_info_window'):
-                cv2.imshow('image_info', self.image_info_window)
-            cv2.waitKey(5) #Prints if a key is pressed at 200hz (5ms sleep)
+        #     if hasattr(self, 'image_info_window'):
+        #         cv2.imshow('image_info', self.image_info_window)
+        #     cv2.waitKey(5) #Prints if a key is pressed at 200hz (5ms sleep)
+        self.process_text() #Just debuging. Everyething else is for the real stuff when you're not passing an arry you hombrewed my speling is god
 
 if __name__ == '__main__':
     node = read_sign("/camera/image_raw")
