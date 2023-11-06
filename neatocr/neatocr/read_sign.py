@@ -9,7 +9,6 @@ import numpy as np
 from geometry_msgs.msg import Twist, Vector3
 from std_msgs.msg import String
 
-
 import easyocr
 import PIL.Image
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
@@ -42,21 +41,23 @@ class read_sign(Node):
         self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
 
     def process_text(self):
-        print("gettying text from image!")
-        # result = reader.readtext(self.cv_image) #actual camera output
-        result = [["Stop","Go"],[1,2,3],[4,5,6]] # This is for test
-        #print(result)
-        #print(type(result))
-        #print(result)
+        result = reader.readtext(self.cv_image) #actual camera output
+        # result = [["Stop","Go"],[1,2,3],[4,5,6]] # This is for test
         if (result != []):
-            #this is throwing an error???
-            print("found text, publishing")
             # msg = String(msg) # When testing just go [0][1] for go and [0][0] for stop
             # msg = String("Hello World!")
-            msg = String(data=result[0][0]) # The piece d'resistance
-            print(msg)
+            result = self.extract_directive(result)
+            print(result)
+            msg = String(data=result) # The piece d'resistance
             self.command_pub.publish(msg)
-        
+
+    def extract_directive(self, easyocr_output):
+        cmd_options = np.array(['stop','go','turn left','turn right'])
+        words = np.array(['null']) #Initialize a array in Numpy so you can search in it
+        for entry in easyocr_output:
+            words = np.append(words, entry[1].lower()) #add each word from the image
+        indices = np.in1d(words, cmd_options)
+        return words[np.argmax(indices)]
 
     def loop_wrapper(self):
         """ This function takes care of calling the run_loop function repeatedly.
@@ -70,7 +71,7 @@ class read_sign(Node):
         cv2.setMouseCallback('video_window', self.process_mouse_event) #Allows you to click the image and see a pixel BGR value
         while True:
             self.run_loop()
-            time.sleep(0.1) #The openCV windows will update around 10Hz
+            time.sleep(0.5) #The openCV windows will update around 10Hz
 
     # def set_red_lower_bound(self, val):
     #     """ A callback function to handle the OpenCV slider to select the red lower bound with the slider"""
@@ -88,19 +89,20 @@ class read_sign(Node):
                     (0,0,0))
         
     def run_loop(self):
-        # NOTE: only do cv2.imshow and cv2.waitKey in this function 
-        # print
-        # if not self.cv_image is None:
-        #     # self.binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
-        #     #print(self.cv_image.shape)
-        #     cv2.imshow('video_window', self.cv_image)
-        #     # cv2.imshow('binary_window', self.binary_image)
-        #     self.process_text()
+        '''
+        NOTE: only do cv2.imshow and cv2.waitKey in this function 
+        '''
+        print
+        if not self.cv_image is None:
+            # self.binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
+            #print(self.cv_image.shape)
+            cv2.imshow('video_window', self.cv_image)
+            # cv2.imshow('binary_window', self.binary_image)
+            self.process_text()
 
-        #     if hasattr(self, 'image_info_window'):
-        #         cv2.imshow('image_info', self.image_info_window)
-        #     cv2.waitKey(5) #Prints if a key is pressed at 200hz (5ms sleep)
-        self.process_text() #Just debuging. Everyething else is for the real stuff when you're not passing an arry you hombrewed my speling is god
+            if hasattr(self, 'image_info_window'):
+                cv2.imshow('image_info', self.image_info_window)
+            cv2.waitKey(5) #Prints if a key is pressed at 200hz (5ms sleep)
 
 if __name__ == '__main__':
     node = read_sign("/camera/image_raw")
