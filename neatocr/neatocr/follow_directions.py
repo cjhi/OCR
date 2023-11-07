@@ -38,37 +38,37 @@ class follow_directions(Node):
     #def process_scan(self, scan):
         #to fill out if we end up adding LiDAR stuff
 
-    def process_text(self, anything):
-        print(f"Latest text: {anything.data}")
-        instructions = anything.data
-        self.current_instructions = instructions
+    def process_text(self, subscriber):
+        if subscriber.data != self.current_instructions:
+            self.current_instructions = subscriber.data
 
     def choosePath(self):
         #After sleeping in the loop, just publish a stop command.
         print(f"current: {self.current_instructions} last: {self.last_instructions}")
         self.drive(0.0,0.0)
-        turn_time = 1.6 # number of seconds it takes to turn 90 degrees?
+        turn_time = 1.64 # number of seconds it takes to turn 90 degrees?
         if self.current_instructions == self.last_instructions: # Prevent a command from mattering forever
             self.current_x = 0.0
             self.current_z = 0.0
-            self.next_sleep = 0.5
+            self.next_sleep = 0.1
             self.boredom += 1
-            if self.boredom >= 8: #Allow the command to work again after a few seconds, if it's still there.
+            if self.boredom >= 40: #Allow the command to work again after a few seconds, if it's still there.
                 self.last_instructions = "null"
+                self.boredom = 0
         else:         # Choose motor speeds based on instructions
             match self.current_instructions:
                 case "go":
                     self.current_x = 0.2
                     self.current_z = 0.0
-                    self.next_sleep = 3.0
+                    self.next_sleep = 5.0
                     print("instructions are to Go Forward")
                     self.last_instructions = "go"
                 case "back up":
                     self.current_x = -0.12
                     self.current_z = 0.0
-                    self.next_sleep = 2.2 
+                    self.next_sleep = 5.0
                     print("instructions are to Back Up")
-                    self.last_instructions = "back_up"
+                    self.last_instructions = "back up"
                 case "turn right":
                     print("not passing")
                     self.current_x = 0.0
@@ -90,7 +90,6 @@ class follow_directions(Node):
                     self.last_instructions = "stop"
                 case _:
                     print("Clear skies, no rules found.")
-                    self.current_instructions = "null"
         
         #publish motor speeds and commands to robot for the time allotted
         self.drive(x=self.current_x, z=self.current_z)
