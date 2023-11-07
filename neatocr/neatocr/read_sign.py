@@ -29,11 +29,14 @@ class read_sign(Node):
         self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
 
         self.create_subscription(Image, image_topic, self.process_image, 10)
-        #self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
         self.command_pub = self.create_publisher(String, 'sign_text', 10)
 
+        # Toggles the display of the camera feed with output on top of it
         thread = Thread(target=self.loop_wrapper)
         thread.start()
+
+        # ocrthread = Thread(target=self.process_text)
+        # ocrthread.start()
 
     def process_image(self, msg):
         """ Process image messages from ROS and stash them in an attribute
@@ -41,23 +44,39 @@ class read_sign(Node):
         self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
 
     def process_text(self):
-        result = reader.readtext(self.cv_image) #actual camera output
+        if not self.cv_image is None:
+            result = reader.readtext(self.cv_image) #actual camera output
         # result = [["Stop","Go"],[1,2,3],[4,5,6]] # This is for test
-        if (result != []):
-            # msg = String(msg) # When testing just go [0][1] for go and [0][0] for stop
-            # msg = String("Hello World!")
-            result = self.extract_directive(result)
-            print(result)
-            msg = String(data=result) # The piece d'resistance
-            self.command_pub.publish(msg)
+            if (result != []):
+                # msg = String(msg) # When testing just go [0][1] for go and [0][0] for stop
+                # msg = String("Hello World!")
+                result = self.extract_directive(result)
+                # print(result) #debug print what the OCR is reading/detecting
+                msg = String(data=result) # The piece d'resistance
+                self.command_pub.publish(msg)
 
     def extract_directive(self, easyocr_output):
-        cmd_options = np.array(['stop','go','turn left','turn right'])
+        cmd_options = np.array(['stop','go','back up','turn left','turn right'])
         words = np.array(['null']) #Initialize a array in Numpy so you can search in it
         for entry in easyocr_output:
             words = np.append(words, entry[1].lower()) #add each word from the image
+        print(words) #gives the clean output of every word cluster detected
         indices = np.in1d(words, cmd_options)
-        return words[np.argmax(indices)]
+        directive = words[np.argmax(indices)]
+        print(directive)
+        return directive
+    
+    def run_loop(self):
+        # TODO: move process_text() to a separate thread somehow and make it asynchronous
+        if not self.cv_image is None:
+            self.process_text()
+            # # self.binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
+            # #print(self.cv_image.shape)
+            # cv2.imshow('video_window', self.cv_image)
+            # # cv2.imshow('binary_window', self.binary_image)
+            # if hasattr(self, 'image_info_window'):
+            #     cv2.imshow('image_info', self.image_info_window)
+            # cv2.waitKey(5) #Prints if a key is pressed at 200hz (5ms sleep)
 
     def loop_wrapper(self):
         """ This function takes care of calling the run_loop function repeatedly.
@@ -71,7 +90,7 @@ class read_sign(Node):
         cv2.setMouseCallback('video_window', self.process_mouse_event) #Allows you to click the image and see a pixel BGR value
         while True:
             self.run_loop()
-            time.sleep(0.5) #The openCV windows will update around 10Hz
+            # time.sleep(0.05) #The openCV windows will update at most 20 hz
 
     # def set_red_lower_bound(self, val):
     #     """ A callback function to handle the OpenCV slider to select the red lower bound with the slider"""
@@ -87,39 +106,17 @@ class read_sign(Node):
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,
                     (0,0,0))
-        
-    def run_loop(self):
-        '''
-        NOTE: only do cv2.imshow and cv2.waitKey in this function 
-        '''
-        print
-        if not self.cv_image is None:
-            # self.binary_image = cv2.inRange(self.cv_image, (self.blue_lower_bound,self.green_lower_bound,self.red_lower_bound), (self.blue_upper_bound,self.green_upper_bound,self.red_upper_bound))
-            #print(self.cv_image.shape)
-            cv2.imshow('video_window', self.cv_image)
-            # cv2.imshow('binary_window', self.binary_image)
-            self.process_text()
-
-            if hasattr(self, 'image_info_window'):
-                cv2.imshow('image_info', self.image_info_window)
-            cv2.waitKey(5) #Prints if a key is pressed at 200hz (5ms sleep)
-
-if __name__ == '__main__':
-    node = read_sign("/camera/image_raw")
-    node.run()
-
 
 def main(args=None):
     print("GO!")
-    # result = reader.readtext('src/OCR/examples/english.png')
+    # result = reader.readtext('src/OCR/examples/english.png') #Tests OCR pkg
     # print(result)
-    #print(type(result))
+    # print(type(result))
     # if (result != None):
     #     print(result[0][1])
-
     rclpy.init()
-    n = read_sign("camera/image_raw")
-    rclpy.spin(n)
+    node = read_sign("/camera/image_raw")
+    rclpy.spin(node)
     rclpy.shutdown()
 
 

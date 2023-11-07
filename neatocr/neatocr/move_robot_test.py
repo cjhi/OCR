@@ -1,3 +1,5 @@
+"""TESTING DOC"""
+
 import easyocr
 import PIL.Image
 if not hasattr(PIL.Image, 'Resampling'):  # Pillow<9.0
