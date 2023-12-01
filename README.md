@@ -1,6 +1,6 @@
 # OCR
-Robot direction-taking with OCR for ROS2
-[Install instructions](##Install instructions)
+Robot direction-taking with OCR for ROS2.\
+[Install instructions](##install-instructions)
 ## Features
 ### Optical Character Recognition
 Our package establishes a live video feed to a capable machine and converts any words in the image to text.
@@ -8,27 +8,26 @@ Our package establishes a live video feed to a capable machine and converts any 
 ### Sign Following
 Our package enables our robot to follow instructions written on signs around a space, enabling it to travel to different locations and complete missions!
 ```python
-#Please Add Details
+ros2 run neaocr follow_directions
 ```
-### Additional Features
-Our package has additional features coming soon!
-```python
-#Vis a vis
-```
+Enables the following features:
+1. Turn Left: the robot will turn 90 degrees clockwise
+2. Turn Right: the robot will turn 90 degrees counterclockwise
+3. Go: the robot will travel forward at 50% speed for 3 seconds
+4. Stop: the robot will stop angular and linear travel.
+5. Back Up: the robot will travel backwards for 3 seconds.
 
+![A video of a robot vacuum looking left, at a sign that says "turn right". The robot turns right, where it turns to face a sign that says, "Turn Left". The robot vacuum turns left again, and the cycle repeats.](webgraphics/neato_rotating.gif)
+![A video of a robot vacuum driving towards a sign that says "go". The robot pushes past the sign that says go, then a sign that says "stop" comes into view. the Robot vacuum stops.](webgraphics/neato_gostop.gif)
 
-##Goal of Project
-What was the goal of your project? Since everyone is doing a different project, you will have to spend some time setting this context.
-
+## Goal of Project
 The stretch goal of this project was to get a Neato to be able to recognize text directions posted on signs on walls throughout the MAC building and follow them from a starting location to an ending location. The Neato would use its onboard camera and built-in LiDAR sensors to locate and interpret instructions and navigate.
 
 We wanted to use (or make) a text recognition algorithm for processing written text. The text would be simple commands like “Go straight” or “Turn at the next corner”. The Neato would then, if we had time to program it, use its LiDAR sensor to detect the next corner or other necessary local obstacles in order to get from a starting point to an ending point.
 
 The MVP that we aimed for was having a Neato be able to read and follow basic instructions held in front of it (“Go”, “Stop”, “Turn Right”, “Turn Left”, “Move Backwards”). We achieved this goal. More details in [Features](##features)
 
-##How we Solved the Problem
-How did you solve the problem (i.e., what methods / algorithms did you use and how do they work)? As above, since not everyone will be familiar with the algorithms you have chosen, you will need to spend some time explaining what you did and how everything works.
-
+## How we Solved the Problem
 We decided to use an existing open source Optical Character Recognition package called EasyOCR. The package has the capability to recognize text from images in 80+ languages.
 
 We created a ROS2 package called neatocr, which contains 2 primary nodes: read_sign, and follow_directions. read_sign establishes a subscription to the camera on the Neato. We take an image from the camera, run EasyOCR on it to see if there is any text to be found in the image, and then repeat the process. The latency of the EasyOCR package is about 3 seconds when there is no or minimal text in an image, and we use this as a timer for how often we pull images from the camera.
@@ -37,39 +36,25 @@ The EasyOCR algorithm returns a list of nested arrays of the location of any tex
 
 In follow_directions, we process the found text and check to see if there is any text relevant to the Neato - primarily, the phrases “Turn right,” “Turn left,” “Go,” “Stop,” or “Back up”. After interpreting this text, velocity commands are sent to the Neato to follow these directions.
 
+## Design Decisions
+We decided to use EasyOCR, an open-source text recognition software, instead of building one from scratch. This gave us the opportunity to delve more into the real-world application and integration of an existing computer vision algorithm with ROS2 as our architecture, as opposed to the logic of the algorithm itself. We focused on learning how to use an existing package with ROS2 threads, and this also allowed us to use the OpenCV pipeline on our robot. 
 
-##Design Decisions
-Describe a design decision you had to make when working on your project and what you ultimately did (and why)? These design decisions could be particular choices for how you implemented some part of an algorithm or perhaps a decision regarding which of two external packages to use in your project.
+## Challenges
+The main challenges we encountered during this project included dealing with random bugs, mostly unrelated to the actual algorithm we were trying to use. These made up the largest time sinks throughout the project. The bugs were related to discrepancies in software versions, accidental duplicate installations of OpenCV, and other seemingly minor things that set us back several hours. This did teach us that sometimes trying to integrate different software packages can be the hardest part of a project.
 
-We decided to use easyOCR, an open-source text recognition software, instead of building one from scratch. This gave us the opportunity to delve more into the real-world application and integration of a computer vision algorithm with ROS2 as our architecture, as opposed to the logic of the algorithm itself. We focused on learning how to use an existing package with ROS2 threads, and this also allowed us to use the OpenCV pipeline on our robot. 
+It also took us a lot of time to work through understanding the data types and formats being used and returned by the EasyOCR package. We had never used the EasyOCR package before, and documentation on the expected args and returns of the main package features was limited. We spent significant time debugging by checking which data types were passed from function to function. For future reference, the NeatOCR reader.readtext() function outputs data as a list-of-lists.
 
-##Challenges
-What if any challenges did you face along the way?
-So. Many. Bugs.
+## Improvements
+Given more time, we would like to enable the ability to follow more complex instructions, such as “take the next left”, or “stop at the far wall”, so that the Neato can actually drive through the MAC. This would require using LiDAR scan data from the Neato. Using the LiDAR data, we would need to write code for localizing/mapping the surroundings of the Neato, and for recognition of certain landmarks. We would algorithmically answer questions like, "What is a corner?", or "What location is the instruction 'go to the far wall' referring to?" before the Neato could drive through the relatively complex environment of the MAC.
 
-We had never used the EasyOCR package before, and backtracking the data types through error debugging 
+In addition, to account for environments that are noisy with existing signs (posters, road signs etc.), it could be helpful to use an image filtering algorithm to identify relevant text. One way to do this is to print signs in a specific color (i.e. green), and use color filtering to filter out any other colors before using the EasyOCR algorithm to look for text.
 
-The main challenges we encountered during this project included dealing with random bugs, mostly unrelated to the actual algorithm we were trying to use. These made up the largest time sinks throughout the project. The bugs were related to discrepancies in software versions, accidental duplicate installations of OpenCV, and other seemingly minor things that set us back several hours.
+## Lessons
+Throughout our development process, we found it to be effective to work on a problem slowly but steadily, in small chunks. This is in reference to both time and complexity. A large problem can be made manageable by breaking it into smaller, simpler chunks and building it up slowly. A dauntingly long project can be finished through a series of focused hour or two-hour long sessions.
 
-It also took us a lot of time to work through understanding the data types and formats being used and returned by the EasyOCR package.
+We also discovered how useful it is to reuse existing algorithms and packages. This project gave us the experience of identifying what we needed for our algorithm, looking for a compatible existing package, and implementing it for our own use. This is a skill that is very relevant to most robotics programming projects, and will be useful to us in the future.
 
-##Improvements
-What would you do to improve your project if you had more time?
-
-Given more time, we would have liked to enable the ability to follow more complex instructions, such as “take the next left”, or “stop at the far wall”, so that we could have had the Neato actually drive through the MAC. This would require using LiDAR scan data from the Neato. Using the LiDAR data, we would need to write code for localizing/mapping the surroundings of the Neato, and for recognition of certain landmarks (What is a corner? What would be considered “the far wall”?) in order to realize this as an algorithm.
-
-In addition, to account for environments that are noisy with existing signs (posters, road signs etc.), it could have been helpful to use an image filtering algorithm to identify relevant text. One way to do this is to print signs in a specific color (i.e. green), and use color filtering to filter out any colors other than that color before using the EasyOCR algorithm to look for text.
-
-Lessons
-Did you learn any interesting lessons for future robotic programming projects? These could relate to working on robotics projects in teams, working on more open-ended (and longer term) problems, or any other relevant topic.
-
-For robotic programming projects, we found it to be effective to work on a problem slowly but steadily, in small chunks. This is in reference to both time and complexity. A large problem can be made manageable by breaking it into small chunks and building it up slowly. A daunting project can be finished through a series of hour or two-hour long focused sessions.
-
-We also discovered how useful it is to reuse existing algorithms and packages. This project gave us the experience of identifying what we needed for our algorithm, looking for a compatible existing package, and implementing that for our own use. This is a skill that is very relevant to most robotics programming projects, and will be useful to us in the future.
-
-Directly related to character recognition, we learned that latency scales linearly depending on the amount of text. This has implications on its use in different applications - for example, for character recognition used on road signs in self-driving cars, the algorithm must function fast enough for a car to react in real time. 
-
-
+Directly related to optical character recognition, we learned that latency of OCR generally scales linearly depending on the amount of text. This has implications on its use in different applications - for example, in the case of character recognition used on road signs in self-driving cars, the algorithm must function fast enough for a car to react in real time while traveling at 10~60 mph.
 
 ## Install Instructions
 ### Install EasyOCR
@@ -143,9 +128,7 @@ First, make sure you are able to connect to the
 ros2 launch neato_node2 bringup.py host:=IP_OF_ROBOT
 ```
 
-neato2_node is based on neato_driver and neato_ros2 packages.
-
-
+neato2_node is based on [neato_driver](https://wiki.ros.org/neato_driver) and [neato_ros2](https://wiki.ros.org/neato_driver) packages.
 
 ### Run neatocr packages
 ```bash

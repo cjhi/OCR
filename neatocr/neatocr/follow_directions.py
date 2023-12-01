@@ -64,11 +64,18 @@ class follow_directions(Node):
                     print("instructions are to Go Forward")
                     self.last_instructions = "go"
                 case "back up":
-                    self.current_x = -0.12
+                    self.current_x = -0.20
                     self.current_z = 0.0
                     self.next_sleep = 5.0
                     print("instructions are to Back Up")
                     self.last_instructions = "back up"
+                case "rotate":
+                    print("not passing")
+                    self.current_x = 0.0
+                    self.current_z = -1.0
+                    self.next_sleep = turn_time*2
+                    print("instructions are to Turn Around")
+                    self.last_instructions = "rotate"
                 case "turn right":
                     print("not passing")
                     self.current_x = 0.0
@@ -89,6 +96,7 @@ class follow_directions(Node):
                     print("Instructions are to Stop")
                     self.last_instructions = "stop"
                 case _:
+                    self.next_sleep = 0
                     print("Clear skies, no rules found.")
         
         #publish motor speeds and commands to robot for the time allotted
