@@ -1,6 +1,6 @@
 # OCR
 Robot direction-taking with OCR for ROS2.\
-[Install instructions](##installation)
+[Install instructions](#installation)
 ## Features
 ### Optical Character Recognition
 Our package establishes a live video feed to a capable machine and converts any words in the image to text.
