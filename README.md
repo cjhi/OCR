@@ -1,6 +1,6 @@
 # OCR
 Robot direction-taking with OCR for ROS2.\
-[Install instructions](##install-instructions)
+[Install instructions](##installation)
 ## Features
 ### Optical Character Recognition
 Our package establishes a live video feed to a capable machine and converts any words in the image to text.
@@ -58,7 +58,7 @@ We also discovered how useful it is to reuse existing algorithms and packages. T
 
 Directly related to optical character recognition, we learned that latency of OCR generally scales linearly depending on the amount of text. This has implications on its use in different applications - for example, in the case of character recognition used on road signs in self-driving cars, the algorithm must function fast enough for a car to react in real time while traveling at 10~60 mph.
 
-## Install Instructions
+## Installation
 ### Install EasyOCR
 ```bash
 pip install easyocr
