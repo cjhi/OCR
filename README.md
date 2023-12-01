@@ -36,7 +36,7 @@ The EasyOCR algorithm returns a list of nested arrays of the location of any tex
 
 In follow_directions, we process the found text and check to see if there is any text relevant to the Neato - primarily, the phrases “Turn right,” “Turn left,” “Go,” “Stop,” or “Back up”. After interpreting this text, velocity commands are sent to the Neato to follow these directions.
 
-![Image](/OCR/webgraphics/node_graph.png)
+![Image](webgraphics/node_graph.png)
 
 ## Design Decisions
 We decided to use EasyOCR, an open-source text recognition software, instead of building one from scratch. This gave us the opportunity to delve more into the real-world application and integration of an existing computer vision algorithm with ROS2 as our architecture, as opposed to the logic of the algorithm itself. We focused on learning how to use an existing package with ROS2 threads, and this also allowed us to use the OpenCV pipeline on our robot. 
